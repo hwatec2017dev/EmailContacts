@@ -1,32 +1,32 @@
-# Email Contact Services
+﻿# Email Contact Services
 
 Is a ServiceStack Single Page App built just using jQuery and Bootstrap to provide an example showing how to structure a medium-sized ServiceStack solution as well as showcasing some of ServiceStack's built-in features useful in the reducing the effort for developing medium-sized Web Applications.
 
-The purpose of the EmailContacts Application is to manage contacts in any RDBMS database, provide a form to be able to send them messages and maintain a rolling history of any emails sent. The application also provides an option to have emails instead sent and processed via [Rabbit MQ](https://github.com/ServiceStack/ServiceStack/wiki/Rabbit-MQ).
+The purpose of the EmailContacts Application is to manage contacts in any RDBMS database, provide a form to be able to send them messages and maintain a rolling history of any emails sent. The application also provides an option to have emails instead sent and processed via [Rabbit MQ](http://docs.servicestack.net/rabbit-mq).
 
-![EmailContacts Screenshot](https://raw.github.com/ServiceStack/EmailContacts/master/src/EmailContacts/Content/splash.png)
+![EmailContacts Screenshot](https://github.com/hwatec2017dev/EmailContacts/blob/master/src/EmailContacts/Content/splash.png)
 
 The entire UI is maintained in a single 
-[default.cshtml](https://github.com/ServiceStack/EmailContacts/blob/master/src/EmailContacts/default.cshtml) 
+[default.cshtml](https://github.com/hwatec2017dev/EmailContacts/blob/master/src/EmailContacts/default.cshtml) 
 page under 130 lines of HTML and 70 lines of JavaScript to render the dynamic UI, bind server validation errors and provide real-time UX feedback. 
-The Application also follows an API-First development style where the Ajax UI calls only published APIs allowing 
+The Application also follows an API-first development style where the Ajax UI calls only published APIs allowing 
 all services to be immediately available, naturally, via an end-to-end typed API to Mobile and Desktop .NET clients.
 
 This documentation goes through setting up this solution from scratch, and explains the ServiceStack features it makes use of along the way.
 
 ## Table of Contents
 
-  - [Creating EmailContacts Solution from Scratch](https://github.com/ServiceStack/EmailContacts#creating-emailcontacts-solution-from-scratch)
+  - [Creating EmailContacts Solution from Scratch](#creating-emailcontacts-solution-from-scratch)
     - Add ServiceStack II7+ handler mapping
     - Install NuGet Packages
-  - [The AppHost](https://github.com/ServiceStack/EmailContacts#the-apphost)
+  - [The AppHost](#the-apphost)
     - Plugins
     - OrmLite
     - Accessing AppSettings
     - Registering Dependencies
     - Profiling
       - SQL Profiling
-  - [HTML Features](https://github.com/ServiceStack/EmailContacts#html-features)
+  - [HTML Features](#html-features)
     - Razor Pages
     - Accessing data in views
       - Accessing Db Directly
@@ -34,7 +34,7 @@ This documentation goes through setting up this solution from scratch, and expla
       - Embedded JSON
       - Loaded via Ajax
       - View Model
-  - [API-first development](https://github.com/ServiceStack/EmailContacts#api-first-development)
+  - [API-first development](#api-first-development)
     - ServiceStack JavaScript Utils - /js/ss-utils.js
     - Bootstrap Forms
       - Binding HTML Forms
@@ -44,20 +44,20 @@ This documentation goes through setting up this solution from scratch, and expla
     - Advanced bindForm usages
       - Form Loading
       - Server initiated actions
-  - [Message queues](https://github.com/ServiceStack/EmailContacts#message-queues)
+  - [Message queues](#message-queues)
     - Benefits of Message Queues
     - Using an MQ for sending Emails
     - Rabbit MQ
     - Configuring an MQ Server in ServiceStack
     - Reliable and Durable Messaging
     - Deferred Execution and Instant Response Times
-  - [Integration Tests](https://github.com/ServiceStack/EmailContacts#integration-tests)
-  - [Unit Tests](https://github.com/ServiceStack/EmailContacts#unit-tests)
-  - [Further Reading](https://github.com/ServiceStack/EmailContacts#further-reading)
+  - [Integration Tests](#integration-tests)
+  - [Unit Tests](#unit-tests)
+  - [Further Reading](#further-reading)
 
 ## Creating EmailContacts Solution from Scratch
 
-This section will take you through the steps for physically laying out setting up a typical ServiceStack Razor + Web Services solution from scratch:
+This section will take you through the steps for [physically laying out](http://docs.servicestack.net/physical-project-structure) setting up a typical ServiceStack Razor + Web Services solution from scratch:
 
   - Create new **EmailContacts** Empty ASP.NET Web Application
   - Add New Class Library Projects to solution:
@@ -67,7 +67,7 @@ This section will take you through the steps for physically laying out setting u
 
 ### Add ServiceStack II7+ handler mapping
 
-Adding this to the [Web.config](https://github.com/ServiceStack/EmailContacts/blob/master/src/EmailContacts/Web.config#L16-L21) tells ASP.NET to route all HTTP Requests to ServiceStack:
+Adding this to the [Web.config](https://github.com/hwatec2017dev/EmailContacts/blob/master/src/EmailContacts/Web.config#L16-L21) tells ASP.NET to route all HTTP Requests to ServiceStack:
 
 ```xml
 <system.webServer>
@@ -86,10 +86,16 @@ For **EmailContacts** Host Project:
 
     PM> Install-Package jQuery
     PM> Install-Package bootstrap
+    PM> Install-Package ServiceStack
+    PM> Install-Package ServiceStack.Interfaces
+    PM> Install-Package ServiceStack.Common
+    PM> Install-Package ServiceStack.Text
     PM> Install-Package ServiceStack.Razor
-    PM> Install-Package ServiceStack.RabbitMq
     PM> Install-Package ServiceStack.Api.Swagger
-    PM> Install-Package ServiceStack.OrmLite.Sqlite.Mono
+    PM> Install-Package ServiceStack.NetFramework
+    PM> Install-Package ServiceStack.RabbitMq
+    PM> Install-Package ServiceStack.OrmLite
+    PM> Install-Package ServiceStack.OrmLite.Sqlite
 
 If on Mono OSX/Linux you also need:
 
@@ -98,9 +104,12 @@ If on Mono OSX/Linux you also need:
 For **EmailContacts.ServiceInterface** project:
 
     PM> Install-Package ServiceStack
+    PM> Install-Package ServiceStack.Interfaces
+    PM> Install-Package ServiceStack.Common
+    PM> Install-Package ServiceStack.Text
     PM> Install-Package ServiceStack.OrmLite
 
-For **EmailContacts.ServiceModel** DTO project:
+For **EmailContacts.ServiceModel** DTOs project:
 
     PM> Install-Package ServiceStack.Interfaces
 
@@ -120,7 +129,7 @@ For **EmailContacts.Test** project:
 
     PM> Install-Package NUnit
     PM> Install-Package ServiceStack.RabbitMq
-    PM> Install-Package ServiceStack.OrmLite.Sqlite.Mono
+    PM> Install-Package ServiceStack.OrmLite.Sqlite
 
 and set **Build > Platform Target** to **x86** so it can run the 32bit sqlite3.dll.
 
@@ -137,11 +146,12 @@ Below is the typical structure for every ServiceStack solution:
 ```csharp
 public class AppHost : AppHostBase
 {
-    public AppHost() : base("Email Contact Services", typeof(ContactsServices).Assembly) {}
+    public AppHost() : base("Email Contact Services", typeof(ContactsServices).Assembly) { }
 
     public override void Configure(Container container)
     {
-        SetConfig(new HostConfig { ... });
+        Plugins.Add(new SwaggerFeature());
+
         ...
     }
 }
@@ -160,7 +170,7 @@ public class Global : System.Web.HttpApplication
     - The name of your solution which appears as the title in the metadata pages
     - The assemblies ServiceStack should look for to register and autowire all your ServiceStack services
     - The `Configure()` method is where to place all your application configuration.
-  1. Most of ServiceStack features are available as options in the `SetConfig()` method
+  1. Most of ServiceStack features are available as options in the `Config.EnableFeatures` property
     - Whilst all custom hooks in ServiceStack (e.g. filters and handlers) are exposed as properties in the base class
     - The configuration of your service should be immutable after the Configure is run on StartUp
   1. Initializing your AppHost is done by running `new AppHost().Init()` in the Global.asax **Application_Start** event
@@ -175,7 +185,7 @@ Most of ServiceStack's high-level features are encapsulated in modular plugins t
 Plugins.RemoveAll(x => x is MetadataFeature);
 ```
 
-The [documentation on Plugins](https://github.com/ServiceStack/ServiceStack/wiki/Plugins) 
+The [documentation on Plugins](http://docs.servicestack.net/plugins) 
 lists all the plugins that are available in ServiceStack and which ones are added by default. Other than the Plugins collection, you can view all the plugins loaded with your application by view the request info of any page with the query string [?debug=requestinfo](?debug=requestinfo) (which is itself a plugin :).
 
 Most plugins have a **Feature** suffix to indicate it's providing some functionality and features to ServiceStack. The exception to this are Format's which provide some representation of your services. These include the built-in 
@@ -195,32 +205,31 @@ Plugins.Add(new RazorFormat());
 Plugins.Add(new RequestLogsFeature());
 
 Plugins.Add(new ValidationFeature());
-container.RegisterValidators(typeof(ContactsServices).Assembly);
 ```
 
   - The `SwagggerFeature` provides a Swagger UI and supporting services visible at [/swagger-ui/](/swagger-ui/)
   - The `RazorFormat` contains ServiceStack's Razor support, described in detail on [razor.servicestack.net](http://razor.servicestack.net/)
   - The `RequestLogsFeature` allows you to view and query all requests processed by ServiceStack at [/requestlogs](/requestlogs)
-  - The `ValidationFeature` adds [Fluent Validation](http://fluentvalidation.codeplex.com/documentation) support to ServiceStack
+  - The `ValidationFeature` adds [Fluent Validation](https://github.com/JeremySkinner/FluentValidation) support to ServiceStack
     - Use `container.RegisterValidators()` to ServiceStack in which Assemblies it can find all the validators it should automatically wire-up
 
 ### OrmLite
 
 OrmLite is a fast, simple, convention-based, config-free lightweight ORM that uses code-first POCO classes to generate RDBMS table schemas. Its API's are simply extension methods over ADO.NET's underlying **System.Data** core interfaces providing DRY, easy-to-use, flexible and expressive APIs for common data access patterns that also includes a typed expression-based LINQ-like API for typed Data Access.
 
-OrmLite has [providers for most major RDBMS's](https://github.com/ServiceStack/ServiceStack.OrmLite/#download) which are configured in the same way by registering the connection string and which dialect to use.
+OrmLite has [providers for most major RDBMS's](https://github.com/hwatec2017dev/ServiceStack.OrmLite/#download) which are configured in the same way by registering the connection string and which dialect to use.
 
 Sqlite is used in this demo since it's a file-based database that's self-contained and doesn't require any external dependencies (perfect for demos :). The Sqlite provider accepts file names for the connection string as well as the special **:memory:** string which tells Sqlite to use an in-memory database.
 
 ```csharp
 container.Register<IDbConnectionFactory>(
-    c => new OrmLiteConnectionFactory("db.sqlite", SqliteDialect.Provider));
+    c => new OrmLiteConnectionFactory("~/db.sqlite".MapHostAbsolutePath()", SqliteDialect.Provider));
 ```
 
 Once registered we can make immediate use of OrmLite by resolving the DB Factory from the IOC and opening a data connection from it. OrmLite also supports the creation of tables based on the schema of code-first POCO's, which we use here to Drop and re-create both Email and Contact tables. After the tables are created we can initialize the app with some test data:
 
 ```csharp
-using (IDbConnection db = container.Resolve<IDbConnectionFactory>().Open())
+using (var db = container.Resolve<IDbConnectionFactory>().Open())
 {
     db.DropAndCreateTable<Email>();
     db.DropAndCreateTable<Contact>();
@@ -236,7 +245,7 @@ using (IDbConnection db = container.Resolve<IDbConnectionFactory>().Open())
 Often you'll want to access application settings and provide them to your dependencies. ServiceStack provides a convenient AppSettings class that simplifies reading from Web.config appSettings and providing your own default complex type configuration if one does not exist:
 
 ```csharp
-var appSettings = new AppSettings();
+var appSettings = ServiceStack.Configuration.AppSettings.Default;
 
 container.Register(appSettings.Get("SmtpConfig",
     new SmtpConfig {
@@ -263,7 +272,7 @@ Instead of using complex nested XML and configuration classes for maintaining st
 
 A common task for any non-trivial application is to register your own dependencies used by your services. We've already seen an example of how to register a dependency when we registered OrmLite, but that took a lambda which meant it took control over the objects construction.
 
-[ServiceStack's built-in IOC](https://github.com/ServiceStack/ServiceStack/wiki/The-IoC-container) 
+[ServiceStack's built-in IOC](http://docs.servicestack.net/ioc) 
 supports a number of other API's to register your dependencies, a common one is to have the IOC also auto wire any dependencies your dependencies might have. The same API allows you to register your concrete dependency against a different interface, i.e:
 
 ```csharp
@@ -275,16 +284,16 @@ This application has 2 substitutable implementations of `IEmailer` available. If
 
 ### Profiling
 
-ServiceStack also comes with an integrated version of [Mini Profiler](https://github.com/ServiceStack/ServiceStack/wiki/Built-in-profiling) which you enable by starting and stopping it in ASP.NET's global.asax Request events, e.g:
+ServiceStack also comes with an integrated version of [Mini Profiler](http://docs.servicestack.net/built-in-profiling) which you enable by starting and stopping it in ASP.NET's global.asax Request events, e.g:
 
 ```csharp
-protected void Application_BeginRequest(object src, EventArgs e)
+protected void Application_BeginRequest(object sender, EventArgs e)
 {
     if (Request.IsLocal)
         Profiler.Start();
 }
 
-protected void Application_EndRequest(object src, EventArgs e)
+protected void Application_EndRequest(object sender, EventArgs e)
 {
     Profiler.Stop();
 }
@@ -319,7 +328,7 @@ Clicking on the link will open a new dialog to view the SQL queries that were pe
 
 ## HTML Features
 
-In addition to providing a solid Services Framework, ServiceStack also serves as a full-featured Web Framework great for powering dynamic websites and javascript-powered Single Page Apps. With no other dependencies, it can create content-heavy and simple dynamic sites like the [ServiceStack Docs](http://mono.servicestack.net/docs/) website using just the built-in [Markdown Razor view engine](http://mono.servicestack.net/docs/markdown/markdown-razor) and static file handling support in ServiceStack.
+In addition to providing a solid Services Framework, ServiceStack also serves as a full-featured Web Framework great for powering dynamic websites and javascript-powered Single Page Apps. With no other dependencies, it can create content-heavy and simple dynamic sites like the [ServiceStack Docs](http://docs.servicestack.net/) website using just the built-in [Markdown Razor view engine](http://docs.servicestack.net/markdown-razor) and static file handling support in ServiceStack.
 
 ### Razor Pages
 
@@ -349,12 +358,12 @@ A productive option all web frameworks should have is being able to execute dyna
 
 ### Accessing data in views
 
-As Razor Pages provide full access to framework features, it enables a few different ways to accesss data from within your pages, shown in [info.cshtml](https://github.com/ServiceStack/EmailContacts/blob/master/src/EmailContacts/info.cshtml):
+As Razor Pages provide full access to framework features, it enables a few different ways to accesss data from within your pages, shown in [info.cshtml](https://github.com/hwatec2017dev/EmailContacts/blob/master/src/EmailContacts/info.cshtml):
 
 #### Accessing Db Directly
 
 If you register a DB Factory in your IOC you can use ADO.NET's `base.Db` IDbConnection property available in Pages and Services and take advantage of the convenience extension methods offered by Micro ORMs like 
-[OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite/) and [Dapper](https://code.google.com/p/dapper-dot-net/). 
+[OrmLite](https://github.com/hwatec2017dev/ServiceStack.OrmLite/) and [Dapper](https://github.com/StackExchange/Dapper). 
 E.g you can view all the Contacts inserted in the AppHost using OrmLite's typed APIs with:
 
 ```html
@@ -433,7 +442,7 @@ A more traditional approach to access data from within a Razor page that is fami
 </ul>
 ```
 
-This is the entire contents of the [/Views/GetContact.cshtml](https://github.com/ServiceStack/EmailContacts/blob/master/src/EmailContacts/Views/GetContact.cshtml) page which can be viewed at [/contacts/1](/contacts/1). 
+This is the entire contents of the [/Views/GetContact.cshtml](https://github.com/hwatec2017dev/EmailContacts/blob/master/src/EmailContacts/Views/GetContact.cshtml) page which can be viewed at [/contacts/1](/contacts/1). 
 Pages that renders the response of a Service are called **View Pages** and are maintained anywhere (i.e. any nested folder structure) in the `/Views` directory. 
 The most appropriate **View Page** that gets selected is based on the following order of precedence:
 
@@ -484,7 +493,7 @@ Embedded inside **ServiceStack.dll** is a JavaScript utility library that offers
 <script type="text/javascript" src="/js/ss-utils.js"></script>
 ```
 
-To showcase how it can simplify general web development, we'll walkthrough the JavaScript needed to provide all the behavior for the [entire UI](https://github.com/ServiceStack/EmailContacts/blob/master/src/EmailContacts/default.cshtml), captured in the 70 lines of JavaScript below using nothing other than jQuery and bootstrap.js:
+To showcase how it can simplify general web development, we'll walkthrough the JavaScript needed to provide all the behavior for the [entire UI](https://github.com/hwatec2017dev/EmailContacts/blob/master/src/EmailContacts/default.cshtml), captured in the 70 lines of JavaScript below using nothing other than jQuery and bootstrap.js:
 
 ```js
 $("input").change($.ss.clearAdjacentError);
@@ -608,7 +617,7 @@ public Contact Post(CreateContact request)
 }
 ```
 
-As seen from the implementation, the above service uses ServiceStack's built-in [AutoMapping](https://github.com/ServiceStack/ServiceStack/wiki/Auto-mapping) to Convert the `CreateContact` Request DTO into an instance of `Contact` POCO DataModel which OrmLite's `Save()` extension method will either INSERT or UPDATE depending on if the Contact already exists or not.
+As seen from the implementation, the above service uses ServiceStack's built-in [AutoMapping](http://docs.servicestack.net/auto-mapping) to Convert the `CreateContact` Request DTO into an instance of `Contact` POCO DataModel which OrmLite's `Save()` extension method will either INSERT or UPDATE depending on if the Contact already exists or not.
 
 #### Fluent Validation
 
@@ -628,7 +637,7 @@ public class ContactsValidator : AbstractValidator<CreateContact>
 
 The Request DTO is first validated with the above declarative rules and if it fails returns a structured error response which ss-utils uses to bind the validation errors to all the invalid field **class=help-block** (or help-inline) placeholders:
 
-![HTML Validation](https://raw.github.com/ServiceStack/EmailContacts/master/src/EmailContacts/Content/html-validation.png)
+![HTML Validation](https://github.com/hwatec2017dev/EmailContacts/blob/master/src/EmailContacts/Content/html-validation.png)
 
 Whilst the user goes back and corrects their INPUT, we can provide instant feedback and clear the errors as they update each each field with:
 
@@ -813,12 +822,12 @@ More details of these and other advantages can be found in the definitive [Enter
 
 Sending emails is a common task that's particularly well suited for Message Queues where SMTP Servers often have resource limits and quotas that can often fail when trying to process a high volume of emails at once. Instead of building a bespoke queuing solution just for processing system emails, you can easily take advantage of purpose-built MQ Brokers to get the desired functionality for free.
 
-ServiceStack includes support for a number of MQ options which as they all implement ServiceStack's [Messaging API](https://github.com/ServiceStack/ServiceStack/wiki/Messaging#wiki-messaging-api), are easily interchangeable.
+ServiceStack includes support for a number of MQ options which as they all implement ServiceStack's [Messaging API](http://docs.servicestack.net/messaging#mq-client-architecture), are easily interchangeable.
 
 ### Rabbit MQ
 
 For this project we'll use the industrial-strength and popular [RabbitMQ](https://www.rabbitmq.com/), documentation for Rabbit MQ support in ServiceStack can be found on the 
-[Rabbit MQ wiki](https://github.com/ServiceStack/ServiceStack/wiki/Rabbit-MQ). 
+[Rabbit MQ wiki](http://docs.servicestack.net/rabbit-mq). 
 Before we can use it, we need to install it first, which can be done by following the [Rabbit MQ Installation guide for Windows](https://github.com/mythz/rabbitmq-windows).
 
 ### Configuring an MQ Server in ServiceStack
@@ -855,7 +864,7 @@ using (var mqClient = mqFactory.CreateMessageQueueClient())
 The client above publishes messages into Rabbit MQ Broker and if there is an instance of ServiceStack running, it will process each message one-by-one. We can start seeing some of the benefits of using MQs by shutting down the ServiceStack server and re-running the test code to see that messages are still being published without error. When no services are up processing messages, the messages just sit in Rabbit MQ's server-side queues until they get consumed. We can verify this by looking at the [Rabbit MQ Management UI](https://github.com/mythz/rabbitmq-windows#publishing-a-persistent-message-to-a-queue) 
 and inspecting the **mq:EmailContact:inq** Inbox to see 2 pending messages:
 
-![Rabbit MQ EmailContact Inbox](https://raw.github.com/ServiceStack/EmailContacts/master/src/EmailContacts/Content/rabbitmq-inq.png)
+![Rabbit MQ EmailContact Inbox](https://github.com/hwatec2017dev/EmailContacts/blob/master/src/EmailContacts/Content/rabbitmq-inq.png)
 
 Now if you start the ServiceStack Server any pending messages get processed and the emails are sent.
 
@@ -869,7 +878,7 @@ client.Post(new EmailContact { ContactId=1, Subject = "HTTP Email #1", Body = "Z
 ### Deferred Execution and Instant Response Times
 
 We can explore another benefit of using MQ's by taking advantage of 
-[ServiceStack's pre-defined routes](https://github.com/ServiceStack/ServiceStack/wiki/Routing#wiki-pre-defined-routes) 
+[ServiceStack's pre-defined routes](http://docs.servicestack.net/routing#pre-defined-routes) 
 and the in-built behavior of `/oneway` routes which will automatically publish the HTTP request into the Registered MQ Server if one exists, 
 if no MQ Server is registered the HTTP Request falls back to the normal behavior and is executed synchronously.
 
@@ -958,13 +967,13 @@ Sending another email or a manual `F5` refresh will refresh message history and 
 ## Integration Tests
 
 ServiceStack's end-to-end typed API simplifies integration testing and introspection of live services letting you use clean, typed, terse, sync or async C# code. You can use any one of the many 
-[.NET Service Clients](https://github.com/ServiceStack/ServiceStack/wiki/C%23-client) available, initialized with the base url of where your ServiceStack services are hosted, e.g:
+[.NET Service Clients](http://docs.servicestack.net/csharp-client) available, initialized with the base url of where your ServiceStack services are hosted, e.g:
 
 ```csharp
 [TestFixture]
 public class IntegrationTests
 {
-    readonly IServiceClient client = new JsonServiceClient("http://localhost:64077/");
+    readonly IServiceClient client = new JsonServiceClient("http://localhost:5001/");
 
     [Test]
     public void Can_call_with_JsonServiceClient()
@@ -1089,7 +1098,7 @@ public class UnitTests
 
 ## Further Reading
 
-  - For more tutorials see the [getting started tutorials and walkthroughs from the ServiceStack community](https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice#wiki-community-resources)
+  - For more tutorials see the [getting started tutorials and walkthroughs from the ServiceStack community](http://docs.servicestack.net/create-your-first-webservice#community-resources)
   - For more example projects see the [Definitive list of Examples, Use-Cases, Demos, Starter Templates](http://stackoverflow.com/a/15869816)
   - For available courses on ServiceStack see [the ServiceStack courses on Plural Sight](http://pluralsight.com/training/Courses/Find?highlight=true&searchTerm=servicestack)
  

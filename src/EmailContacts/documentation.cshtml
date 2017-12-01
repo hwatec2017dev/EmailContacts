@@ -9,48 +9,47 @@
     <link href="Content/bootstrap-theme.css" rel="stylesheet" />
     <style type="text/css">
         body {
-            margin: 20px;
+            margin: 20px auto;
             color: #444;
             width: 960px;
         }
     </style>
 </head>
 <body>
-    <a href="/"><h1 class="glyphicon glyphicon-send" style="float:left; margin:0 10px 0 0; color: #444"></h1></a>
     <h1>Email Contact Services</h1>
     <div class="clearfix"></div>
 
     <p>
         Is a ServiceStack Single Page App built just using jQuery and Bootstrap to provide an example
-        showing how to structure a medium-sized ServiceStack solution as well as showcasing some 
-        of ServiceStack's built-in features useful in the reducing the effort for developing 
+        showing how to structure a medium-sized ServiceStack solution as well as showcasing some
+        of ServiceStack's built-in features useful in the reducing the effort for developing
         medium-sized Web Applications.
     </p>
-    
+
     <p>
-        The purpose of the EmailContacts Application is to manage contacts in any RDBMS database, 
-        provide a form to be able to send them messages and maintain a rolling history of any emails sent. 
-        The application also provides an option to have emails instead sent and processed via 
-        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Rabbit-MQ">Rabbit MQ</a>.
+        The purpose of the EmailContacts Application is to manage contacts in any RDBMS database,
+        provide a form to be able to send them messages and maintain a rolling history of any emails sent.
+        The application also provides an option to have emails instead sent and processed via
+        <a href="http://docs.servicestack.net/rabbit-mq">Rabbit MQ</a>.
     </p>
-    
-    <a href="/"><img src="Content/splash.png" width="880" style="padding: 10px;"/></a>
-    
+
+    <a href="https://github.com/ServiceStackApps/LiveDemos"><img src="Content/splash.png" width="880" style="padding: 10px;" /></a>
+
     <p>
-        The entire UI is maintained in a single <b>default.cshtml</b> page under 130 lines of HTML 
+        The entire UI is maintained in a single <a href="https://github.com/hwatec2015dev/EmailContacts/blob/master/src/EmailContacts/Views/GetContact.cshtml"><b>default.cshtml</b></a> page under 130 lines of HTML
         and 70 lines of JavaScript to render the dynamic UI, bind server validation errors
-        and provide real-time UX feedback. 
-        The Application also follows an API-First development style where the Ajax UI calls only published APIs allowing 
+        and provide real-time UX feedback.
+        The Application also follows an API-first development style where the Ajax UI calls only published APIs allowing
         all services to be immediately available, naturally, via an end-to-end typed API to Mobile and Desktop .NET clients.
     </p>
-    
+
     <p>
-        This documentation goes through setting up this solution from scratch, and explains the 
+        This documentation goes through setting up this solution from scratch, and explains the
         ServiceStack features it makes use of along the way.
     </p>
 
-    <hr/>
-    
+    <hr />
+
     <h2>Table of Contents</h2>
     <ul>
         <li>
@@ -130,25 +129,25 @@
         <li>
             <a href="#unit-tests">Unit Tests</a>
         </li>
-        
+
         <li>
             <a href="#further-reading">Further Reading</a>
         </li>
     </ul>
-    
-    <hr/>
-    
+
+    <hr />
+
     <a name="from-scratch"></a>
     <h2>Creating EmailContacts Solution from Scratch</h2>
-    
+
     <p>
-        This section will take you through the steps for 
-        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Physical-project-structure">physically laying out</a>
+        This section will take you through the steps for
+        <a href="http://docs.servicestack.net/physical-project-structure">physically laying out</a>
         setting up a typical ServiceStack Razor + Web Services solution from scratch:
     </p>
 
     <ol>
-        <li>Create new <b>EmailContacts</b> Empty ASP.NET Web Application</li>  
+        <li>Create new <b>EmailContacts</b> Empty ASP.NET Web Application</li>
         <li>
             Add New Class Library Projects to solution:
             <ul>
@@ -158,7 +157,7 @@
             </ul>
         </li>
     </ol>
-    
+
     <h3>Add ServiceStack II7+ handler mapping</h3>
     <p>
         Adding this to the <b>Web.config</b> tells ASP.NET to route all HTTP Requests to ServiceStack:
@@ -173,29 +172,44 @@
   &lt;/handlers&gt;
 &lt;/system.webServer&gt;
 </pre>
-    
+
     <h3>Install NuGet Packages</h3>
 
-    <p>For <b>EmailContacts</b> Host Project:</p>    
+    <p>For <b>EmailContacts</b> Host Project:</p>
 <pre>
 PM> Install-Package jQuery
 PM> Install-Package bootstrap
+PM> Install-Package ServiceStack
+PM> Install-Package ServiceStack.Interfaces
+PM> Install-Package ServiceStack.Common
+PM> Install-Package ServiceStack.Text
 PM> Install-Package ServiceStack.Razor
-PM> Install-Package ServiceStack.Swagger
+PM> Install-Package ServiceStack.Api.Swagger
+PM> Install-Package ServiceStack.NetFramework
 PM> Install-Package ServiceStack.RabbitMq
+PM> Install-Package ServiceStack.OrmLite
+PM> Install-Package ServiceStack.OrmLite.Sqlite
 </pre>
-    
+
+    <p>If on Mono OSX/Linux you also need:</p>
+<pre>
+    PM> Install-Package Microsoft.AspNet.WebPages
+</pre>
+
     <p>For <b>EmailContacts.ServiceInterface</b> project:</p>
 <pre>
 PM> Install-Package ServiceStack
+PM> Install-Package ServiceStack.Interfaces
+PM> Install-Package ServiceStack.Common
+PM> Install-Package ServiceStack.Text
 PM> Install-Package ServiceStack.OrmLite
 </pre>
-    
-    <p>For <b>EmailContacts.ServiceModel</b> DTO project:</p>
+
+    <p>For <b>EmailContacts.ServiceModel</b> DTOs project:</p>
 <pre>
 PM> Install-Package ServiceStack.Interfaces
 </pre>
-    
+
     <p>
         Configure your model namespaces to be included in all Razor Pages by default by adding them to Web.config's Razor namespaces:
     </p>
@@ -208,25 +222,23 @@ PM> Install-Package ServiceStack.Interfaces
     &lt;/namespaces&gt;
 &lt;/pages>
 </pre>
-    
-    <p>For <b>EmailContacts.Test</b> project:</p>
+
+    <p>For <b>EmailContacts.Tests</b> project:</p>
 <pre>
 PM> Install-Package NUnit
 PM> Install-Package ServiceStack.RabbitMq
-PM> Install-Package ServiceStack.OrmLite.Sqlite.Mono
+PM> Install-Package ServiceStack.OrmLite.Sqlite
 </pre>
-    
-    <p>and set <b>Build &gt; Platform Target</b> to <b>x86</b> so it can run the 32bit sqlite3.dll.</p>
-    
+
     <p>The next step is to setup your ServiceStack AppHost:</p>
 
-    <hr/>
+    <hr />
     <a name="apphost"></a>
     <h2>The AppHost</h2>
     <p>
-        The role of the AppHost is to be the central place where all your applications configuration 
+        The role of the AppHost is to be the central place where all your applications configuration
         should be defined, where all the plugins, filters and everything else your service needs
-        should be configured. It also serves as the conduit for binding all your services concrete 
+        should be configured. It also serves as the conduit for binding all your services concrete
         dependencies against their registered abstractions. Ideally the implementation of your service
         would then only depend on these substitutable interfaces making it possible to mock in testing.
     </p>
@@ -236,16 +248,17 @@ PM> Install-Package ServiceStack.OrmLite.Sqlite.Mono
         where initialization code for your application that only runs once on StartUp is kept.
     </p>
     <p>
-        Below is the typical structure for every ServiceStack solution:        
+        Below is the typical structure for every ServiceStack solution:
     </p>
 
 <pre>public class AppHost : AppHostBase
 {
-    public AppHost() : base("Email Contact Services", typeof(ContactsServices).Assembly) {}
+    public AppHost() : base("Email Contact Services", typeof(ContactsServices).Assembly) { }
 
     public override void Configure(Container container)
     {
-        SetConfig(new HostConfig { ... });
+        Plugins.Add(new SwaggerFeature());
+
         ...
     }
 }
@@ -256,8 +269,8 @@ public class Global : System.Web.HttpApplication
     {
         new AppHost().Init();
     }
-}</pre>        
-    
+}</pre>
+
     <ol>
         <li>By convention the AppHost is called <b>AppHost</b> which for ASP.NET hosts inherits from <b>AppHostBase</b></li>
         <li>
@@ -270,49 +283,49 @@ public class Global : System.Web.HttpApplication
         <li>
             The <b>Configure()</b> method is where to place all your application configuration.
             <ul>
-                <li>Most of ServiceStack features are available as options in the <b>SetConfig()</b> method</li>
-                <li>Whilst all custom hooks in  ServiceStack (e.g. filters and handlers) are exposed as properties in the base class</li>
+                <li>Most of ServiceStack features are available as options in the <b>Config.EnableFeatures</b> property</li>
+                <li>Whilst all custom hooks in ServiceStack (e.g. filters and handlers) are exposed as properties in the base class</li>
                 <li>The configuration of your service should be immutable after the Configure is run on StartUp</li>
             </ul>
         </li>
         <li>Initializing your AppHost is done by running <b>new AppHost().Init()</b> in the Global.asax <b>Application_Start</b> event</li>
     </ol>
-        
+
     <a name="plugins"></a>
-    <h3>Plugins</h3>                
-    <img src="http://i.imgur.com/2Hf3P9L.png" width="370" style="float:right; padding: 0 0 0 10px"/>
+    <h3>Plugins</h3>
+    <img src="http://i.imgur.com/2Hf3P9L.png" width="370" style="float:right; padding: 0 0 0 10px" />
     <p>
         Most of ServiceStack's high-level features are encapsulated in modular plugins that can be
         easily added and removed. Typically ServiceStack will register most of built-in plugins by
-        default which can be easily, added, removed or configured. 
+        default which can be easily, added, removed or configured.
         E.g. you can remove the Metadata pages with:
     </p>
 <pre>Plugins.RemoveAll(x => x is MetadataFeature);</pre>
-    
+
     <p>
-        The <a href="https://github.com/ServiceStack/ServiceStack/wiki/Plugins">documentation on Plugins</a>
+        The documentation on <a href="http://docs.servicestack.net/plugins">Plugins</a>
         lists all the plugins that are available in ServiceStack and which ones are added by default.
         Other than the <b>Plugins</b> collection, you can view all the plugins loaded with your application
-        by view the request info of any page with the query string <a href="?debug=requestinfo">?debug=requestinfo</a> 
+        by view the request info of any page with the query string <a href="?debug=requestinfo">?debug=requestinfo</a>
         (which is itself a plugin :).
     </p>
-    
+
     <p>
-        Most plugins have a <b>Feature</b> suffix to indicate it's providing some functionality and 
+        Most plugins have a <b>Feature</b> suffix to indicate it's providing some functionality and
         features to ServiceStack. The exception to this are Format's which provide some representation
-        of your services. These include the built-in <b>CsvFormat</b>, <b>MarkdownFormat</b>, <b>HtmlFormat</b>. 
-        Whilst other Formats are available in external NuGet packages include: 
+        of your services. These include the built-in <b>CsvFormat</b>, <b>MarkdownFormat</b>, <b>HtmlFormat</b>.
+        Whilst other Formats are available in external NuGet packages include:
         <b>MsgPackFormat</b>, <b>ProtoBufFormat</b> and <b>RazorFormat</b>.
     </p>
 
     <h4>Plugins Links</h4>
     <p>
-        To make it easier to discover Plugins that have a Web UI are listed at the bottom of the 
+        To make it easier to discover Plugins that have a Web UI are listed at the bottom of the
         metadata pages. The plugins that are publicly available are listed under <b>Plugin Links:</b>
-        whilst plugins only available during <b>DebugMode</b> or to administrators are listed under 
+        whilst plugins only available during <b>DebugMode</b> or to administrators are listed under
         the <b>Debug Links:</b> heading.
     </p>
-    
+
     <h4>Description of plugins used</h4>
     <p>
         The new plugins available in this app are listed at the top of the <b>Configure()</b> method:
@@ -323,35 +336,34 @@ Plugins.Add(new RazorFormat());
 Plugins.Add(new RequestLogsFeature());
 
 Plugins.Add(new ValidationFeature());
-container.RegisterValidators(typeof(ContactsServices).Assembly);
 </pre>
-    
+
     <ul>
         <li>The <b>SwagggerFeature</b> provides a Swagger UI and supporting services visible at <a href="/swagger-ui/">/swagger-ui/</a></li>
         <li>The <b>RazorFormat</b> contains ServiceStack's Razor support, described in detail on <a href="http://razor.servicestack.net">razor.servicestack.net</a></li>
         <li>The <b>RequestLogsFeature</b> allows you to view and query all requests processed by ServiceStack at <a href="/requestlogs">/requestlogs</a></li>
         <li>
-            The <b>ValidationFeature</b> adds <a href="http://fluentvalidation.codeplex.com/documentation">Fluent Validation</a> support to ServiceStack
+            The <b>ValidationFeature</b> adds <a href="https://github.com/JeremySkinner/FluentValidation">Fluent Validation</a> support to ServiceStack
             <ul>
                 <li>Use <b>container.RegisterValidators()</b> to ServiceStack in which Assemblies it can find all the validators it should automatically wire-up</li>
             </ul>
         </li>
     </ul>
-    
+
     <a name="ormlite"></a>
     <h3>OrmLite</h3>
-    
+
     <p>
-        OrmLite is a fast, simple, convention-based, config-free lightweight ORM that uses code-first 
+        OrmLite is a fast, simple, convention-based, config-free lightweight ORM that uses code-first
         POCO classes to generate RDBMS table schemas.
-        Its API's are simply extension methods over ADO.NET's underlying <b>System.Data</b> core interfaces 
-        providing DRY, easy-to-use, flexible and expressive APIs for common data access patterns 
+        Its API's are simply extension methods over ADO.NET's underlying <b>System.Data</b> core interfaces
+        providing DRY, easy-to-use, flexible and expressive APIs for common data access patterns
         that also includes a typed expression-based LINQ-like API for typed Data Access.
     </p>
-    
+
     <p>
-        OrmLite has 
-        <a href="https://github.com/ServiceStack/ServiceStack.OrmLite/#download">providers for most major RDBMS's</a>        
+        OrmLite has
+        <a href="https://github.com/hwatec2017dev/ServiceStack.OrmLite/#download">providers for most major RDBMS's</a>
         which are configured in the same way by registering the connection string and which dialect to use.
     </p>
 
@@ -361,39 +373,37 @@ container.RegisterValidators(typeof(ContactsServices).Assembly);
         file names for the connection string as well as the special <b>:memory:</b> string which tells
         Sqlite to use an in-memory database.
     </p>
-    
+
 <pre>container.Register&lt;IDbConnectionFactory&gt;(
-    c => new OrmLiteConnectionFactory("db.sqlite", SqliteDialect.Provider));
+    c => new OrmLiteConnectionFactory("~/db.sqlite".MapHostAbsolutePath()", SqliteDialect.Provider));
 </pre>
 
     <p>
-        Once registered we can make immediate use of OrmLite by resolving the DB Factory from the IOC 
-        and opening a data connection from it. OrmLite also supports the creation of tables based on 
-        the schema of code-first POCO's, which we use here to Drop and re-create both <b>Email</b>
+        Once registered we can make immediate use of OrmLite by resolving the DB connection factory from the IOC
+        and opening a data connection from it. OrmLite also supports the creation of tables based on
+        the schema of code-first POCO's, which we use here to drop and re-create both <b>Email</b>
         and <b>Contact</b> tables. After the tables are created we can initialize the app with some test data:
     </p>
 
-<pre>using (IDbConnection db = container.Resolve&lt;IDbConnectionFactory&gt;().Open())
+<pre>using (var db = container.Resolve&lt;IDbConnectionFactory&gt;().Open())
 {
     db.DropAndCreateTable&lt;Email&gt;();
     db.DropAndCreateTable&lt;Contact&gt;();
 
-    db.Insert(new Contact { Name = "Kurt Cobain", Email = "demo+kurt@servicestack.net", Age = 27 });
-    db.Insert(new Contact { Name = "Jimi Hendrix", Email = "demo+jimi@servicestack.net", Age = 27 });
-    db.Insert(new Contact { Name = "Michael Jackson", Email = "demo+mike@servicestack.net", Age = 50 });
+    ContactsServices.AddCustomers(db);
 }
 </pre>
-    
+
     <a name="appsettings"></a>
     <h3>Accessing AppSettings</h3>
     <p>
         Often you'll want to access application settings and provide them to your dependencies.
-        ServiceStack provides a convenient <b>AppSettings</b> class that simplifies reading from 
-        <b>Web.config</b> appSettings and providing your own default complex type configuration if 
+        ServiceStack provides a convenient <b>AppSettings</b> class that simplifies reading from
+        <b>Web.config</b> appSettings and providing your own default complex type configuration if
         one does not exist:
     </p>
-    
-<pre>var appSettings = new AppSettings();
+
+<pre>var appSettings = ServiceStack.Configuration.AppSettings.Default;
 
 container.Register(appSettings.Get("SmtpConfig",
     new SmtpConfig {
@@ -402,20 +412,20 @@ container.Register(appSettings.Get("SmtpConfig",
         UserName = "ADD_USERNAME",
         Password = "ADD_PASSWORD"
     }));
-</pre>    
-    
+</pre>
+
     <p>
-        The config above will look for an appSetting named <b>SmtpConfig</b>, if it exists it will 
-        deserialize it into a <b>SmtpConfig</b> class using the 
-        <a href="https://github.com/ServiceStack/ServiceStack.Text/wiki/JSV-Format">JSV Format</a>,
+        The config above will look for an appSetting named <b>SmtpConfig</b>, if it exists it will
+        deserialize it into a <b>SmtpConfig</b> class using the
+        <a href="https://github.com/hwatec2017dev/ServiceStack.Text/wiki/JSV-Format">JSV Format</a>,
         otherwise it will use the default inline <b>SmtpConfig</b> provided.
         The registration above also registers an instance of SmtpConfig in the IOC so that will be injected
-        into any dependency or service that has a SmtpConfig Type <b>public property</b> or 
+        into any dependency or service that has a SmtpConfig Type <b>public property</b> or
         constructor argument.
     </p>
-    
+
     <p>
-        Instead of using complex nested XML and configuration classes for maintaining structured configuration, 
+        Instead of using complex nested XML and configuration classes for maintaining structured configuration,
         the <b>AppSettings</b> class and JSV Format lets you dehydrate complex type configuration into clean POCO's with a single in-line appSetting value:
     </p>
 
@@ -426,17 +436,17 @@ container.Register(appSettings.Get("SmtpConfig",
 </pre>
 
     <a name="dependencies"></a>
-    <h3>Registering Dependencies</h3>    
-    
+    <h3>Registering Dependencies</h3>
+
     <p>
         A common task for any non-trivial application is to register your own dependencies used by your services.
-        We've already seen an example of how to register a dependency when we registered OrmLite, 
+        We've already seen an example of how to register a dependency when we registered OrmLite,
         but that took a lambda which meant it took control over the objects construction.
     </p>
-    
+
     <p>
-        <a href="https://github.com/ServiceStack/ServiceStack/wiki/The-IoC-container">ServiceStack's built-in IOC</a>
-        supports a number of other API's to register your dependencies, a common one is to have the 
+        <a href="http://docs.servicestack.net/ioc">ServiceStack's built-in IOC</a>
+        supports a number of other API's to register your dependencies, a common one is to have the
         IOC also auto wire any dependencies your dependencies might have. The same API allows you to
         register your concrete dependency against a different interface, i.e:
     </p>
@@ -448,27 +458,27 @@ container.RegisterAs&lt;SmtpEmailer, IEmailer&gt;().ReusedWithin(ReuseScope.Requ
 
     <p>
         This application has 2 substitutable implementations of <b>IEmailer</b> available. If you have
-        access to an SMTP server it can send emails using <b>SmtpEmailer</b>, otherwise register 
-        <b>DbEmailer</b> instead to simulate sending emails with a 1 second delay and track a history 
+        access to an SMTP server it can send emails using <b>SmtpEmailer</b>, otherwise register
+        <b>DbEmailer</b> instead to simulate sending emails with a 1 second delay and track a history
         of them in a database.
     </p>
 
     <a name="profiling"></a>
     <h3>Profiling</h3>
-    
+
     <p>
-        ServiceStack also comes with an integrated version of 
-        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Built-in-profiling">Mini Profiler</a>        
-        which you enable by starting and stopping it in ASP.NET's global.asax Request events, e.g:
+        ServiceStack also comes with an integrated version of
+        <a href="http://docs.servicestack.net/built-in-profiling">Mini Profiler</a>
+        which you enable by starting and stopping it in ASP.NET's Global.asax Request events, e.g:
     </p>
-    
-<pre>protected void Application_BeginRequest(object src, EventArgs e)
+
+<pre>protected void Application_BeginRequest(object sender, EventArgs e)
 {
     if (Request.IsLocal)
         Profiler.Start();
 }
 
-protected void Application_EndRequest(object src, EventArgs e)
+protected void Application_EndRequest(object sender, EventArgs e)
 {
     Profiler.Stop();
 }
@@ -477,17 +487,17 @@ protected void Application_EndRequest(object src, EventArgs e)
     <p>
         Once enabled the Mini Profiler UI will appear at the top-right of ServiceStack's auto HTML pages, e.g:
     </p>
-    
-    <img src="http://mono.servicestack.net/files/miniprofiler-hello.png" alt="Mini Profiler Basic"/>
-    
+
+    <img src="http://mono.servicestack.net/files/miniprofiler-hello.png" alt="Mini Profiler Basic" />
+
     <h4>SQL Profiling</h4>
     <p>
         The mini profiler also supports profiling SQL performed in services. To enable it you will need
-        let Mini Profiler profile the connection which you can be done at registration: 
+        let Mini Profiler profile the connection which you can be done at registration:
     </p>
-    
+
 <pre>container.Register&lt;IDbConnectionFactory&gt;(
-    c => new OrmLiteConnectionFactory("db.sqlite", SqliteDialect.Provider) {
+    c => new OrmLiteConnectionFactory("~db.sqlite".MapHostAbsolutePath()", SqliteDialect.Provider) {
         ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
     });
 </pre>
@@ -497,43 +507,43 @@ protected void Application_EndRequest(object src, EventArgs e)
         results view
     </p>
 
-    <img src="http://mono.servicestack.net/files/miniprofiler-simpledb.png" alt="Simple DB Example"/>
+    <img src="http://mono.servicestack.net/files/miniprofiler-simpledb.png" alt="Simple DB Example" />
 
     <p>
         The mini profiler also warns when it detects N+1 sql queries:
-    </p>    
+    </p>
 
-    <img src="http://mono.servicestack.net/files/miniprofiler-simpledb-n1.png" alt="Simple N+1 DB Example"/>
-    
+    <img src="http://mono.servicestack.net/files/miniprofiler-simpledb-n1.png" alt="Simple N+1 DB Example" />
+
     <p>
         Clicking on the link will open a new dialog to view the SQL queries that were performed for that request:
     </p>
 
-    <img src="http://mono.servicestack.net/files/miniprofiler-simpledb-n1-sql.png" width="500" alt="SQL Viewer"/>
-    
-    <hr/>
-    
+    <img src="http://mono.servicestack.net/files/miniprofiler-simpledb-n1-sql.png" width="500" alt="SQL Viewer" />
+
+    <hr />
+
     <a name="html-features"></a>
     <h2>HTML Features</h2>
-    
+
     <p>
         In addition to providing a solid Services Framework, ServiceStack also serves as a full-featured
-        Web Framework great for powering dynamic websites and javascript-powered Single Page Apps. 
-        With no other dependencies, it can create content-heavy and simple dynamic sites like the 
-        <a href="http://mono.servicestack.net/docs/">ServiceStack Docs</a> website
+        Web Framework great for powering dynamic websites and javascript-powered Single Page Apps.
+        With no other dependencies, it can create content-heavy and simple dynamic sites like the
+        <a href="http://docs.servicestack.net/">ServiceStack Docs</a> website
         using just the built-in
-        <a href="http://mono.servicestack.net/docs/markdown/markdown-razor">Markdown Razor view engine</a>        
-        and static file handling support in ServiceStack. 
+        <a href="http://docs.servicestack.net/markdown-razor">Markdown Razor view engine</a>
+        and static file handling support in ServiceStack.
     </p>
 
-    <h3>Razor Pages</h3>    
-    
+    <h3>Razor Pages</h3>
+
     <p>
-        To unlock the full-potential of the web framework it's highly recommended to enable 
-        Razor support which adds a number of its own features to simplify web development documented at 
+        To unlock the full-potential of the web framework it's highly recommended to enable
+        Razor support which adds a number of its own features to simplify web development documented at
         <a href="http://razor.servicestack.net">razor.servicestack.net</a>.
     </p>
-    
+
     <p>
         ServiceStack's Razor support is contained in the <b>ServiceStack.Razor</b> NuGet package added at the start,
         to enable it just register the <b>RazorFormat</b> plugin in your AppHost:
@@ -545,19 +555,19 @@ protected void Application_EndRequest(object src, EventArgs e)
     ...
 }
 </pre>
-    
+
     <p>
         Now you're ready to start creating Razor pages which are just plain-text HTML pages with a <b>.cshtml</b> extension.
     </p>
-    
+
     <h4>The No Ceremony option - Dynamic pages without Controllers</h4>
-    
+
     <p>
-        A productive option all web frameworks should have is being able to execute dynamic pages 
+        A productive option all web frameworks should have is being able to execute dynamic pages
         directly without the boilerplate of an intermediate controller. ServiceStack has particularly
         good support for this story with a number of useful features:
     </p>
-    
+
     <ul>
         <li><b>Pretty Urls by default</b> - Hitting F5 on a <b>page.cshtml</b> will auto redirect to the ideal <b>/page</b> route</li>
         <li><b>Default pages for directories</b> - Directories will execute its <b>default.cshtml</b> page and retain its pretty url</li>
@@ -565,22 +575,22 @@ protected void Application_EndRequest(object src, EventArgs e)
         <li><b>Smart View Pages</b> - ServiceStack's Razor pages aren't crippled, they have full access to framework features, HTTP Request, deps, Services, etc</li>
         <li><b>Request ViewModel</b> - When executed directly, the Views <b>Model</b> is a dynamic object that looks at HTTP Headers, QueryString, FormData, etc</li>
     </ul>
-    
+
     <h3>Accessing data in views</h3>
-    
+
     <p>
         As Razor Pages provide full access to framework features, it enables a few different
         ways to accesss data from within your pages, shown in <a href="info">info.cshtml</a>:
     </p>
-    
+
     <h4>Accessing Db Directly</h4>
     <p>
         If you register a DB Factory in your IOC you can use ADO.NET's <b>base.Db</b> IDbConnection
-        property available in Pages and Services and take advantage of the convenience extension 
-        methods offered by Micro ORMs like 
-        <a href="https://github.com/ServiceStack/ServiceStack.OrmLite/">OrmLite</a>
-        and 
-        <a href="https://code.google.com/p/dapper-dot-net/">Dapper</a>. 
+        property available in Pages and Services and take advantage of the convenience extension
+        methods offered by Micro ORMs like
+        <a href="https://github.com/hwatec2017dev/ServiceStack.OrmLite/">OrmLite</a>
+        and
+        <a href="https://github.com/StackExchange/Dapper">Dapper</a>.
 
         E.g you can view all the Contacts inserted in the AppHost using OrmLite's typed APIs with:
     </p>
@@ -591,7 +601,7 @@ protected void Application_EndRequest(object src, EventArgs e)
         &lt;li&gt;@@contact.Name @@contact.Email (@@contact.Age)&lt;/li&gt;
     }
 &lt;/ul&gt;</pre>
-    
+
     <h4>Accessing Services and Dependencies</h4>
     <p>
         Rather than querying the DB directly another option is to query Services or Repositories which
@@ -608,14 +618,14 @@ protected void Application_EndRequest(object src, EventArgs e)
         }
     }
 &lt;/ul&gt;</pre>
-    
+
     <p>
         This works because Services are themselves just registered dependencies that you can resolve
         from the IOC and execute as is. The one caveat is if your services makes use of the <b>Request</b>
         object it will need to be either injected manually or instead of Get&lt;T&gt; call
         <b>ResolveService&lt;T&gt;</b> to do it.
     </p>
-    
+
     <h4>Embedded JSON</h4>
     <p>
         Often using JavaScript ends up being an easier and more flexible alternative to generating HTML than C#.
@@ -636,24 +646,24 @@ function contactsHtml(contacts) {
     }).join('');
 }
 &lt;/script&gt;
-</pre>    
+</pre>
 
     <p>
         In this example <b>AsRawJson()</b> converts the C# collection into a JSON Array which is automatically
-        inferred as a native JavaScript array when loaded by the browser. It's then passed to the 
-        <b>contactsHtml(contacts)</b> JavaScript function that converts it into a HTML string that is 
+        inferred as a native JavaScript array when loaded by the browser. It's then passed to the
+        <b>contactsHtml(contacts)</b> JavaScript function that converts it into a HTML string that is
         injected into the <b>#embedded-json</b> UL HTML element using jQuery's <b>$.append()</b> method.
     </p>
-    
+
     <h4>Loaded via Ajax</h4>
-    
+
     <p>
         The popular alternative to using JavaScript to generate HTML is to load the JSON via Ajax, which
         as ServiceStack returns pure DTOs serialized into JSON (and respects the HTTP Accept: application/json)
         becomes as simple as calling your service via its published /route and traversing the resultset
         directly in JavaScript:
     </p>
-    
+
 <pre>$.getJSON("/contacts", addContacts);
 
 function addContacts(contacts) {
@@ -662,44 +672,44 @@ function addContacts(contacts) {
 </pre>
 
     <p>
-        Generating HTML via Ajax is effectively the same as <b>Embedded JSON</b> in which we're able to 
-        re-use the <b>contractsHtml()</b> method to generate the HTML, the only difference is the 
-        JSON is a result of an <b>$.getJSON()</b> ajax call instead of calling the method directly. 
+        Generating HTML via Ajax is effectively the same as <b>Embedded JSON</b> in which we're able to
+        re-use the <b>contractsHtml()</b> method to generate the HTML, the only difference is the
+        JSON is a result of an <b>$.getJSON()</b> ajax call instead of calling the method directly.
     </p>
-    
+
     <h4>View Model</h4>
-    
+
     <p>
         A more traditional approach to access data from within a Razor page that is familiar to MVC
         developers is to have it passed in as the ViewModel into the page. In ServiceStack, you don't
         need a separate Controller because your existing Services also serve as the Controller and
-        its response is used as the ViewModel, in which case the syntax is exactly the same as it is 
+        its response is used as the ViewModel, in which case the syntax is exactly the same as it is
         in ASP.NET MVC, i.e:
     </p>
-    
+
 <pre>@@model Contact
 
 &lt;h3&gt;View Model&lt;/h3&gt;
 &lt;ul&gt;
     &lt;li&gt;@@contact.Name @@contact.Email (@@contact.Age)&lt;/li&gt;
 &lt;/ul&gt;
-</pre>    
-    
+</pre>
+
     <p>
-        This is the entire contents of the 
-        <a href="https://github.com/ServiceStack/EmailContacts/blob/master/src/EmailContacts/Views/GetContact.cshtml">/Views/GetContact.cshtml</a> 
+        This is the entire contents of the
+        <a href="https://github.com/hwatec2017dev/EmailContacts/blob/master/src/EmailContacts/Views/GetContact.cshtml">/Views/GetContact.cshtml</a>
         page which can be viewed
-        at <a href="/contacts/1">/contacts/1</a>. 
-        Pages that renders the response of a Service are called <b>View Pages</b> and are maintained 
-        anywhere (i.e. any nested folder structure) in the <b>/Views</b> directory. 
+        at <a href="/contacts/1">/contacts/1</a>.
+        Pages that renders the response of a Service are called <b>View Pages</b> and are maintained
+        anywhere (i.e. any nested folder structure) in the <b>/Views</b> directory.
         The most appropriate View Page that gets selected is based on the following order of precedence:
     </p>
-    
+
     <ol>
         <li>The same name as the Request DTO - e.g. <b>GetContact.cshtml</b></li>
         <li>The same name as the Resposne DTO - e.g. <b>Contact.cshtml</b></li>
     </ol>
-    
+
     <p>
         The Selected View (and Template) can also be changed at runtime by returning a decorated response
         and setting the View in a HttpResult:
@@ -709,7 +719,7 @@ function addContacts(contacts) {
     View = {viewName},
     Template = {layoutName},
 };
-</pre>    
+</pre>
 
     <p>
         Using the <b>[DefaultView]</b> Request attribute filter on a Service class or method, e.g:
@@ -721,46 +731,46 @@ public class MyService : Service
     [DefaultView("{View}")]
     public object Get(Request request) { ... }
 }
-</pre>    
-    
+</pre>
+
     <p>
-        Specified by the client as part of the request, e.g. via the QueryString for Services marked 
+        Specified by the client as part of the request, e.g. via the QueryString for Services marked
         with the <b>[ClientCanSwapTemplates]</b> attribute:
     </p>
 
 <pre>[ClientCanSwapTemplates]
 public class MyService : Service { ... }
 </pre>
-    
+
     <p>
         Which will enable the client to change the View or Template used by specifying it on the QueryString,
-        e.g: <b>/contact/1?View={View}</b>. This is useful in scenarios when you want to view pages 
+        e.g: <b>/contact/1?View={View}</b>. This is useful in scenarios when you want to view pages
         in multiple page layouts, e.g. Print Previews or Mobile optimized pages.
     </p>
-    
-    <hr/>
+
+    <hr />
 
     <a name="api-first"></a>
     <h2>API-first development</h2>
-    
+
     <p>
         A strategy we recommend for maximizing re-use of your Services is to design them from an API-first
         point of view where all consumers (e.g. Desktop, Mobile and Web UIs) have equal accessibility to
         your services since they all consume the same published API's for all of their functionality.
     </p>
-    
+
     <p>
-        For web development this means that UI logic and Error handling should ideally be done on the 
-        client with JavaScript rather than behind server-side pages which gets easily coupled to your 
+        For web development this means that UI logic and Error handling should ideally be done on the
+        client with JavaScript rather than behind server-side pages which gets easily coupled to your
         server implementation rather than your external published APIs. Whilst this may be perceived as a
-        restriction we've found using JavaScript ends up being a productivity and responsiveness win 
-        which is more flexible and better suited than C# in genericizing reusable functionality, 
-        reducing boilerplate, string manipulation, generating HTML views, consuming ajax services, 
-        event handling, DOM binding and manipulation, etc 
+        restriction we've found using JavaScript ends up being a productivity and responsiveness win
+        which is more flexible and better suited than C# in genericizing reusable functionality,
+        reducing boilerplate, string manipulation, generating HTML views, consuming ajax services,
+        event handling, DOM binding and manipulation, etc.
     </p>
 
     <h3>ServiceStack JavaScript Utils - /js/ss-utils.js</h3>
-    
+
     <p>
         Embedded inside <b>ServiceStack.dll</b> is a JavaScript utility library that offers a number of convenience
         utilities in developing javascript enhanced pages and includes nice integration with ServiceStack's
@@ -770,14 +780,14 @@ public class MyService : Service { ... }
 <pre>
 &lt;script type="text/javascript" src="/js/ss-utils.js"&gt;&lt;/script&gt;
 </pre>
-    
+
     <p>
-        To showcase how it can simplify general web development, 
-        we'll walkthrough the JavaScript needed to provide the all behavior for the multiple-forms 
-        <a href="/">home page</a> which is captured in the 70 lines of JavaScript below using 
+        To showcase how it can simplify general web development,
+        we'll walkthrough the JavaScript needed to provide the all behavior for the multiple-forms
+        <a href="/">home page</a> which is captured in the 70 lines of JavaScript below using
         nothing other than jQuery and bootstrap.js:
     </p>
-    
+
 <pre>
 &lt;script&gt;
     $("input").change($.ss.clearAdjacentError);
@@ -852,11 +862,11 @@ public class MyService : Service { ... }
     });
 &lt;/script&gt;
 </pre>
-    
+
     <p>
         The stand-alone page also doesn't contain any images, relying instead on Bootstraps glyphicon fonts for its graphics.
     </p>
-    
+
     <a name="forms"></a>
     <h3>Bootstrap Forms</h3>
     <p>
@@ -876,28 +886,28 @@ public class MyService : Service { ... }
     &lt;/div&gt;
 &lt;/form&gt;
 </pre>
-    
+
     <p>
-        The first interesting thing is the action url is created with a typed API populated by the <b>ToPostUrl()</b> 
+        The first interesting thing is the action url is created with a typed API populated by the <b>ToPostUrl()</b>
         extension method that looks at <b>CreateContact</b> Request DTO to return the best matching route
         based on the Route definitions and the fields populated in the Request DTO instance, in this case
-        the empty Request DTO matches <b>[Route("/contacts", "POST")]</b> so returns <b>/contacts</b>. 
+        the empty Request DTO matches <b>[Route("/contacts", "POST")]</b> so returns <b>/contacts</b>.
     </p>
 
     <p>
-        Other significant parts in this HTML Form is that the INPUT field names match up with the 
-        Request DTO it posts to and that it includes Bootstraps <b>class="help-block"</b> placeholders 
+        Other significant parts in this HTML Form is that the INPUT field names match up with the
+        Request DTO it posts to and that it includes Bootstraps <b>class="help-block"</b> placeholders
         adjacent to each INPUT element which is what ss-utils.js uses to bind the field validation errors.
     </p>
-    
+
 
     <a name="bind-forms"></a>
     <h4>Binding HTML Forms</h4>
-    
+
     <p>
         You can ajaxify this FORM by using ss-utils jQuery mixin <b>bindForm</b>, e.g:
     </p>
-    
+
 <pre>
 $("#form-addcontact").bindForm({
     success: function (contact) {
@@ -906,14 +916,14 @@ $("#form-addcontact").bindForm({
             .first().focus();
     }
 });
-</pre>    
-    
+</pre>
+
     <p>
-        This takes over the handling of this FORM and instead of doing a POST back of the entire page 
-        to the server, it makes an Ajax request using all the fields in the FORM to POST the data to 
-        the <b>CreateContact</b> Service: 
+        This takes over the handling of this FORM and instead of doing a POST back of the entire page
+        to the server, it makes an Ajax request using all the fields in the FORM to POST the data to
+        the <b>CreateContact</b> Service:
     </p>
-    
+
 <pre>
 public Contact Post(CreateContact request)
 {
@@ -921,20 +931,20 @@ public Contact Post(CreateContact request)
     Db.Save(contact);
     return contact;
 }
-</pre>    
-    
+</pre>
+
     <p>
-        As seen from the implementation, the above service uses ServiceStack's built-in AutoMapping to 
-        Convert the CreateContact Request DTO into an instance of the <b>Contact</b> POCO DataModel which 
-        OrmLite's <b>Save()</b> extension method will either INSERT or UPDATE depending on if the 
-        Contact already exists or not. 
+        As seen from the implementation, the above service uses ServiceStack's built-in <a href="http://docs.servicestack.net/auto-mapping">AutoMapping</a> to
+        Convert the CreateContact Request DTO into an instance of the <b>Contact</b> POCO DataModel which
+        OrmLite's <b>Save()</b> extension method will either INSERT or UPDATE depending on if the
+        Contact already exists or not.
     </p>
-    
+
     <h4>Fluent Validation</h4>
     <p>
-        Normally the Service implementation will be called as-is but because we've added the FluentValidation 
+        Normally the Service implementation will be called as-is but because we've added the FluentValidation
         <b>ValidationFeature</b> plugin and a validator exists for <b>CreateContact</b>:
-    </p>    
+    </p>
 
 <pre>
 public class CotntactsValidator : AbstractValidator&lt;CreateContact&gt;
@@ -949,13 +959,13 @@ public class CotntactsValidator : AbstractValidator&lt;CreateContact&gt;
 </pre>
 
     <p>
-        The Request DTO is first validated with the above declarative rules and if it fails returns a 
-        structured error response which ss-utils uses to bind the validation errors to all the invalid 
+        The Request DTO is first validated with the above declarative rules and if it fails returns a
+        structured error response which ss-utils uses to bind the validation errors to all the invalid
         field <b>class=help-block</b> (or help-inline) placeholders:
     </p>
-    
-    <img src="Content/html-validation.png" alt="HTML Validation"/>
-    
+
+    <img src="Content/html-validation.png" alt="HTML Validation" />
+
     <p>
         Whilst the user goes back and corrects their INPUT, we can provide instant feedback and clear
         the errors as they update each each field with:
@@ -967,7 +977,7 @@ $("input").change($.ss.clearAdjacentError);
 
     <p>
         Once all is sucessful we invoke the <b>success:</b> callback with the response of the Service
-        which in this case is the newly created Contact which we dynamically add to the contacts list by 
+        which in this case is the newly created Contact which we dynamically add to the contacts list by
         calling the existing <b>addContacts()</b> method. We also clear all form values and put focus back
         to the first field, ready for a rapid entry of the next Contact:
     </p>
@@ -980,7 +990,7 @@ $("#form-addcontact").bindForm({
             .first().focus();
     }
 });
-</pre>    
+</pre>
 
     <a name="declarative-events"></a>
     <h3>Declarative Events</h3>
@@ -989,7 +999,7 @@ $("#form-addcontact").bindForm({
         An interesting difference in the dynamically generated HTML are the presence of
         <b>data-click=showContact</b> and <b>data-click=deleteContact</b> attributes:
     </p>
-    
+
 <pre>
 function addContacts(contacts) {
     var html = contacts.map(function (c) {
@@ -1008,7 +1018,7 @@ function addContacts(contacts) {
         event handlers without needing to maintain bookkeeping of event handlers when adding or removing elements.
         You can instead define one set of event handlers for the entire page with <b>bindHandlers</b>, e.g:
     </p>
-    
+
 <pre>
 $(document).bindHandlers({
     showContact: function() {
@@ -1042,7 +1052,7 @@ $(document).bindHandlers({
 <pre>
 $.ss.listenOn = 'click dblclick change focus blur focusin focusout select keydown keypress keyup hover toggle';
 </pre>
-    
+
     <a name="databinding"></a>
     <h3>Data Binding</h3>
 
@@ -1061,28 +1071,28 @@ showContact: function() {
         $("#form-emailcontact .alert-success").hide();
     });
 },
-</pre>    
-    
+</pre>
+
     <p>
         The databinding applied by <b>applyValues()</b> include:
     </p>
-    
+
     <ul>
         <li>Set the <b>value</b> of all elements with matching <b>id={field}</b> or <b>name={field}</b></li>
         <li>Set the <b>value</b> of all elements marked with <b>data-val</b></li>
         <li>Set the innerHTML contents of all elements marked with <b>data-html</b></li>
     </ul>
-    
+
     <a name="advanced-bindForm"></a>
     <h3>Advanced bindForm usages</h3>
 
-    <a name="form-loading"></a>    
+    <a name="form-loading"></a>
     <h4>Form Loading</h4>
-    
+
     <p>
-        Whilst a FORM is being processed all its buttons with <b>[type=submit]</b> (overridable with $.ss.onSubmitDisable) are disabled and a 
-        <b>loading</b> class is added whilst a response from the server is pending. 
-        This can be used to provide UX feedback to end users with just CSS. E.g. we use 
+        Whilst a FORM is being processed all its buttons with <b>[type=submit]</b> (overridable with $.ss.onSubmitDisable) are disabled and a
+        <b>loading</b> class is added whilst a response from the server is pending.
+        This can be used to provide UX feedback to end users with just CSS. E.g. we use
         <b>.loading</b> CSS rule to show the rotating glyphicon:
     </p>
 
@@ -1094,10 +1104,10 @@ showContact: function() {
 
     <a name="server-events"></a>
     <h4>Server initiated actions</h4>
-    
+
     <p>
-        Some useful functionality not demonstrated in this example is your Services ability to invoke client 
-        behavior by returning a response decorated with custom HTTP Headers. An example is being able to 
+        Some useful functionality not demonstrated in this example is your Services ability to invoke client
+        behavior by returning a response decorated with custom HTTP Headers. An example is being able to
         return "Soft Redirects" to navigate to a different page by adding a <b>X-Location</b> HTTP Header, e.g:
     </p>
 
@@ -1108,7 +1118,7 @@ return new HttpResult(response) {
     }
 };
 </pre>
-    
+
     <p>
         When returned to a ajax form, it will instruct the page to automatically redirect to the new url.
     </p>
@@ -1116,7 +1126,7 @@ return new HttpResult(response) {
     <p>
         You can also trigger an event on the page by returning a <b>X-Trigger</b> header, e.g:
     </p>
-    
+
 <pre>
 return new HttpResult(response) {
     Headers = {
@@ -1124,7 +1134,7 @@ return new HttpResult(response) {
     }
 };
 </pre>
-    
+
     <p>
         In this case the page event handler named <b>showLoginPopup</b> will be invoked if it exists.
     </p>
@@ -1139,18 +1149,18 @@ return HttpResult.SoftRedirect(new ViewContact { Id = newContact.Id }.ToGetUrl()
 return HttpResult.TriggerEvent(contact, eventName:"showLoginPopup");
 </pre>
 
-    <hr/>
+    <hr />
 
     <a name="message-queues"></a>
     <h2>Message Queues</h2>
-    
+
     <h3>Benefits of Message Queues</h3>
     <p>
         One of the benefits of using ServiceStack is its integrated support for hosting MQ Servers
-        allowing your Services to be invoked via a MQ Broker. There are a number of reasons why you'd want 
+        allowing your Services to be invoked via a MQ Broker. There are a number of reasons why you'd want
         to use a MQ as an alternative to HTTP including:
     </p>
-    
+
     <ul>
         <li>Sender is decoupled from Receiver, eliminating point-to-point coupling and configuration</li>
         <li>Allows no-touch deploy of new clients and servers without updating any configuration</li>
@@ -1166,41 +1176,41 @@ return HttpResult.TriggerEvent(contact, eventName:"showLoginPopup");
         <li>Better recovery, messages generating server exceptions can be retried and later maintained in a dead-letter-queue</li>
         <li>DLQ messages can be introspected, fixed and later replayed after server updates and rejoin normal message workflow</li>
     </ul>
-    
+
     <p>
         More details of these and other advantages can be found in the definitive
         <a href="http://www.eaipatterns.com">Enterprise Integration Patterns</a>.
     </p>
 
-    <h3>Using an MQ for sending Emails</h3>    
+    <h3>Using an MQ for sending Emails</h3>
     <p>
         Sending emails is a common task that's particularly well suited for Message Queues where SMTP Servers
         often have resource limits and quotas that can often fail when trying to process a high volume of emails at once.
         Instead of building a bespoke queuing solution just for processing system emails, you can easily take
         advantage of purpose-built MQ Brokers to get the desired functionality for free.
     </p>
-    
+
     <p>
-        ServiceStack includes support for a number of MQ options which as they all implement ServiceStack's 
-        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Messaging#wiki-messaging-api">Messaging API</a>
-        they're easily interchangeable. 
+        ServiceStack includes support for a number of MQ options which as they all implement ServiceStack's
+        <a href="http://docs.servicestack.net/messaging#mq-client-architecture">Messaging API</a>
+        they're easily interchangeable.
     </p>
-    
+
     <h3>Rabbit MQ</h3>
     <p>
         For this project we'll use the industrial-strength and popular <a href="https://www.rabbitmq.com/">RabbitMQ</a>,
-        documentation for Rabbit MQ support in ServiceStack can be found on the 
-        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Rabbit-MQ">Rabbit MQ wiki</a>. 
+        documentation for Rabbit MQ support in ServiceStack can be found on the
+        <a href="http://docs.servicestack.net/rabbit-mq">Rabbit MQ wiki</a>.
         Before we can use it, we need to install it first, which can be done by following the
         <a href="https://github.com/mythz/rabbitmq-windows">Rabbit MQ Installation guide for Windows</a>.
     </p>
-    
+
     <h3>Configuring an MQ Server in ServiceStack</h3>
     <p>
         Once the Rabbit MQ broker is started we can start using it.
-        Configuring an MQ Server is done the same way in ServiceStack, e.g: 
+        Configuring an MQ Server is done the same way in ServiceStack, e.g:
     </p>
-    
+
 <pre>
 container.Register&lt;IMessageService&gt;(c => new RabbitMqServer());
 var mqServer = container.Resolve&lt;IMessageService&gt;();
@@ -1211,17 +1221,17 @@ mqServer.Start();
 </pre>
 
     <ol>
-      <li>Register which concrete MQ Server implementation you wish to use</li>  
-      <li>Register which services you wish to make available via MQ</li>  
-      <li>Start the MQ Server</li>  
+        <li>Register which concrete MQ Server implementation you wish to use</li>
+        <li>Register which services you wish to make available via MQ</li>
+        <li>Start the MQ Server</li>
     </ol>
 
     <p>
-        With the above configuration ServiceStack will now let you send requests via MQ, to test this 
+        With the above configuration ServiceStack will now let you send requests via MQ, to test this
         out we can go to the Integration tests which shows how to create a MQ Client and start publishing
         requests:
     </p>
-    
+
     <a name="mq-reliability"></a>
     <h3>Reliable and Durable Messaging</h3>
 
@@ -1234,49 +1244,49 @@ using (var mqClient = mqFactory.CreateMessageQueueClient())
     mqClient.Publish(new EmailContact { ContactId = 1, Subject = "UnitTest MQ Email #2", Body = "Body 2" });
 }
 </pre>
- 
+
     <p>
         The client above publishes messages into Rabbit MQ Broker and if there is an instance of ServiceStack
         running, it will process each message one-by-one. We can start seeing some of the benefits of using
-        MQs by shutting down the ServiceStack server and re-running the test code to see that messages 
+        MQs by shutting down the ServiceStack server and re-running the test code to see that messages
         are still being published without error. When no services are up processing messages, the messages
-        just sit in Rabbit MQ's server-side queues until they get consumed. We can verify this by looking at the 
+        just sit in Rabbit MQ's server-side queues until they get consumed. We can verify this by looking at the
         <a href="https://github.com/mythz/rabbitmq-windows#publishing-a-persistent-message-to-a-queue">Rabbit MQ Management UI</a>
         and inspecting the <b>mq:EmailContact:inq</b> Inbox to see 2 pending messages:
     </p>
 
-    <img src="Content/rabbitmq-inq.png" alt="Rabbit MQ EmailContact Inbox" width="700" style="padding:10px 0"/>
-    
+    <img src="Content/rabbitmq-inq.png" alt="Rabbit MQ EmailContact Inbox" width="700" style="padding:10px 0" />
+
     <p>
         Now if you start the ServiceStack Server any pending messages get processed and the emails are sent.
     </p>
-    
+
     <p>
         If you tried sending the request via HTTP when the Server is offline you'll expectedly get
-        connection exceptions notifying you that the client was unable to connect with the server and 
+        connection exceptions notifying you that the client was unable to connect with the server and
         the valid client requests are lost:
     </p>
-    
+
     <pre>
 var client = new JsonServiceClient(baseUri);
 client.Post(new EmailContact { ContactId = 1, Subject = "UnitTest HTTP Email #1", Body = "Body 1" }); //throws
 </pre>
 
-    <a name="mq-deferred"></a>    
+    <a name="mq-deferred"></a>
     <h3>Deferred Execution and Instant Response Times</h3>
     <p>
-        We can explore another benefit of using MQ's by taking advantage of 
-        <a href="https://github.com/ServiceStack/ServiceStack/wiki/Routing#wiki-pre-defined-routes">ServiceStack's pre-defined routes</a>
-        and the in-built behavior of <b>/oneway</b> routes which will automatically publish the HTTP request 
-        into the Registered MQ Server if one exists, if no MQ Server is registered the HTTP Request falls 
+        We can explore another benefit of using MQ's by taking advantage of
+        <a href="http://docs.servicestack.net/routing#pre-defined-routes">ServiceStack's pre-defined routes</a>
+        and the in-built behavior of <b>/oneway</b> routes which will automatically publish the HTTP request
+        into the Registered MQ Server if one exists, if no MQ Server is registered the HTTP Request falls
         back to the normal behavior and is executed synchronously.
     </p>
-    
+
     <p>
         When requests are published to the registered MQ Broker the execution of that request is deferred
         and the response time of that request is only the time it takes to publish the Request DTO to
         the broker and not the execution of that request. To see this in action we check the
-        <b>Email via MQ</b> checkbox which just swaps the url that the form is posted to, to use the 
+        <b>Email via MQ</b> checkbox which just swaps the url that the form is posted to, to use the
         alternate <b>/oneway</b> url:
     </p>
 
@@ -1298,11 +1308,11 @@ $(document).bindHandlers({
                 .data("action-alt", action);
     }
 });
-</pre>    
+</pre>
 
     <p>
-        If the checkbox remains unchecked you should notice the rotating glyphicon whilst the email is 
-        being sent if using the <b>SmtpEmailer</b>, otherwise if the AppHost is registered to use the 
+        If the checkbox remains unchecked you should notice the rotating glyphicon whilst the email is
+        being sent if using the <b>SmtpEmailer</b>, otherwise if the AppHost is registered to use the
         <b>DbEmailer</b> you'll see the 1 second simulated delay:
     </p>
 
@@ -1356,36 +1366,36 @@ public class DbEmailer : RepositoryBase, IEmailer
     }
 }
 </pre>
-    
+
     <p>
         If the checkbox is checked it will use the alternative <b>/oneway</b> url and sending emails
         becomes instant. You'll also not see the message appear in the <b>Email History</b> right away
-        as the history gets refreshed before the operation had completed. Sending another email or a 
-        manual <b>F5</b> refresh will refresh message history and see notification of the email being sent.         
+        as the history gets refreshed before the operation had completed. Sending another email or a
+        manual <b>F5</b> refresh will refresh message history and see notification of the email being sent.
     </p>
 
-    <hr/>
-    
+    <hr />
+
     <a name="integration-tests"></a>
     <h2>Integration Tests</h2>
-    
+
     <p>
         ServiceStack's end-to-end typed API simplifies integration testing and introspection of live services
-        letting you use clean, typed, terse, sync or async C# code. You can use any one of the many 
-        <a href="https://github.com/ServiceStack/ServiceStack/wiki/C%23-client">.NET Service Clients</a> 
-        available, initialized with the base url of where your ServiceStack services are hosted, e.g:   
+        letting you use clean, typed, terse, sync or async C# code. You can use any one of the many
+        <a href="http://docs.servicestack.net/csharp-client">.NET Service Clients</a>
+        available, initialized with the base url of where your ServiceStack services are hosted, e.g:
     </p>
-    
+
 <pre>
 [TestFixture]
 public class IntegrationTests
 {
-    readonly IServiceClient client = new JsonServiceClient("http://localhost:64077/");
+    readonly IServiceClient client = new JsonServiceClient("http://localhost:5001/");
 
     [Test]
     public void Can_call_with_JsonServiceClient()
     {
-        client.Post(new CreateContact { Name = "Unit Test", Email = "demo+unit@servicestack.net", Age = 27 });
+        client.Post&lt;Contact&gt;(new CreateContact { Name = "Unit Test", Email = "demo+unit@servicestack.net", Age = 27 });
 
         Contact contact = client.Get(new GetContact { Id = 1 });
 
@@ -1422,7 +1432,7 @@ public class IntegrationTests
     }
 }
 </pre>
-    
+
     <p>
         Remember to use a <b>async Task</b> return type when testing Async APIs that use <b>await</b>
         on the async Task responses.
@@ -1430,33 +1440,33 @@ public class IntegrationTests
 
     <p>
         The <b>T.PrintDump()</b> extension method writes out a recursive, pretty-formatted dump of all
-        the response DTO's properties which we find to be extremely useful and time saving for 
+        the response DTO's properties which we find to be extremely useful and time saving for
         introspecting the responses of live services.
     </p>
-    
+
     <a name="unit-tests"></a>
     <h2>Unit Tests</h2>
-    
+
     <p>
-        A nice characteristic of ServiceStack services are that they are plain C# classes which have all 
-        their dependencies injected which makes calling them as simple as resolving them from the IOC 
-        and calling their C# methods. They also share a similar structure to real services where all 
+        A nice characteristic of ServiceStack services are that they are plain C# classes which have all
+        their dependencies injected which makes calling them as simple as resolving them from the IOC
+        and calling their C# methods. They also share a similar structure to real services where all
         configuration and dependencies are registered in an AppHost and Services are executed using
         the same Request DTO's used in live services and integration tests.
     </p>
-    
+
     <p>
         To simplify the environment for unit testing you can use ServiceStack's BasicAppHost class which
-        is an open-ended / implementation-agnostic AppHost base class that's not coupled to any HTTP Server 
-        but still retains the same functionality as it shares the same <b>ServiceStackHost</b> base class. 
+        is an open-ended / implementation-agnostic AppHost base class that's not coupled to any HTTP Server
+        but still retains the same functionality as it shares the same <b>ServiceStackHost</b> base class.
     </p>
-    
+
     <p>
-        As its open-ended it provides a number of custom hooks to be able to configure the test context 
+        As its open-ended it provides a number of custom hooks to be able to configure the test context
         without needing to create multiple test AppHosts. In this Unit Test example we're using an in-memory
         Sqlite database that's seeded with only 1 test contact that's used for all the tests:
     </p>
-    
+
     <pre>
 [TestFixture]
 public class UnitTests
@@ -1523,19 +1533,20 @@ public class UnitTests
 }
 </pre>
 
-    <hr/>
+    <hr />
 
-    <a name="further-reading"></a>    
+    <a name="further-reading"></a>
     <h2>Further Reading</h2>
-    
+
     <ul>
         <li>
-            For more tutorials see a number of other 
-            <a href="https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice#wiki-community-resources">
-                getting started tutorials and walkthroughs from the ServiceStack community</a>
+            For more tutorials see a number of other
+            <a href="http://docs.servicestack.net/create-your-first-webservice#community-resources">
+                getting started tutorials and walkthroughs from the ServiceStack community
+            </a>
         </li>
         <li>
-            For more example projects see the 
+            For more example projects see the
             <a href="http://stackoverflow.com/a/15869816">
                 Definitive list of Example Projects, Use-Cases, Demos, Starter Templates
             </a>

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Data;
-using EmailContacts.ServiceModel;
-using EmailContacts.ServiceModel.Types;
 using ServiceStack;
 using ServiceStack.FluentValidation;
 using ServiceStack.OrmLite;
+using EmailContacts.ServiceModel;
+using EmailContacts.ServiceModel.Types;
 
 namespace EmailContacts.ServiceInterface
 {
@@ -12,7 +12,7 @@ namespace EmailContacts.ServiceInterface
     {
         public CotntactsValidator()
         {
-            RuleFor(x => x.Name).NotEmpty().WithMessage("A Name is what's needed.");
+            RuleFor(x => x.Name).NotEmpty();
             RuleFor(x => x.Email).NotEmpty().EmailAddress();
             RuleFor(x => x.Age).GreaterThan(0);
         }

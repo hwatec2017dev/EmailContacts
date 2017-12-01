@@ -21,10 +21,12 @@ namespace EmailContacts
 {
     public class AppHost : AppHostBase
     {
-        public AppHost() : base("Email Contact Services", typeof(ContactsServices).Assembly, typeof(QueryEmails).Assembly) {}
+        public AppHost() : base("Email Contact Services", typeof(ContactsServices).Assembly) { }
 
         public override void Configure(Container container)
         {
+            Plugins.Add(new MiniProfilerFeature());
+
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new RazorFormat());
             Plugins.Add(new RequestLogsFeature());
@@ -38,7 +40,8 @@ namespace EmailContacts
             Plugins.Add(new AutoQueryFeature());
 
             container.Register<IDbConnectionFactory>(
-                c => new OrmLiteConnectionFactory("~/db.sqlite".MapHostAbsolutePath(), SqliteDialect.Provider) {
+                c => new OrmLiteConnectionFactory("~/db.sqlite".MapHostAbsolutePath(), SqliteDialect.Provider)
+                {
                     ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
                 });
 
@@ -72,11 +75,12 @@ namespace EmailContacts
 
         private static void UseSmtpEmailer(Container container)
         {
-            var appSettings = new AppSettings();
+            var appSettings = ServiceStack.Configuration.AppSettings.Default;
 
             //Use 'SmtpConfig' appSetting in Web.config if it exists otherwise use default config below:
             container.Register(appSettings.Get("SmtpConfig",
-                new SmtpConfig {
+                new SmtpConfig
+                {
                     Host = "smtphost",
                     Port = 587,
                     UserName = "ADD_USERNAME",
@@ -94,13 +98,13 @@ namespace EmailContacts
             new AppHost().Init();
         }
 
-        protected void Application_BeginRequest(object src, EventArgs e)
+        protected void Application_BeginRequest(object sender, EventArgs e)
         {
             if (Request.IsLocal)
                 Profiler.Start();
         }
 
-        protected void Application_EndRequest(object src, EventArgs e)
+        protected void Application_EndRequest(object sender, EventArgs e)
         {
             Profiler.Stop();
         }

@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using System.Net.Mail;
 using System.Threading;
-using EmailContacts.ServiceModel.Types;
 using ServiceStack;
 using ServiceStack.OrmLite;
+using EmailContacts.ServiceModel.Types;
 
 namespace EmailContacts.ServiceInterface
 {

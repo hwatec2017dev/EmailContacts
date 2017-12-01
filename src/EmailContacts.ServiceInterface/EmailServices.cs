@@ -1,8 +1,8 @@
-﻿using EmailContacts.ServiceModel;
-using EmailContacts.ServiceModel.Types;
-using ServiceStack;
+﻿using ServiceStack;
 using ServiceStack.FluentValidation;
 using ServiceStack.OrmLite;
+using EmailContacts.ServiceModel;
+using EmailContacts.ServiceModel.Types;
 
 namespace EmailContacts.ServiceInterface
 {

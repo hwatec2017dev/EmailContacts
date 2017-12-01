@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using EmailContacts.ServiceModel.Types;
 using ServiceStack;
+using EmailContacts.ServiceModel.Types;
 
 namespace EmailContacts.ServiceModel
 {
